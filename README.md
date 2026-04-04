@@ -211,9 +211,13 @@ See [docs/diagrams.md](docs/diagrams.md) for:
 
 ## 👥 Team Details
 
-| Role               | Contributor   |
-| ------------------ | ------------- |
+| Role | Contributor |
+| ---- | ----------- |
 | Full Stack Developer | Ansh Sharma |
+| Backend Developer | [Member 2 Name] |
+| Frontend Developer | [Member 3 Name] |
+| Database & Architecture | [Member 4 Name] |
+| Testing & Documentation | [Member 5 Name] |
 
 ---
 

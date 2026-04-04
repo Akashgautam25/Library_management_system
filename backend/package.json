@@ -7,7 +7,14 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "seed": "ts-node src/seeds/bookSeeder.ts"
+    "seed": "ts-node src/seeds/bookSeeder.ts",
+    "test": "jest --runInBand"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.ts"],
+    "moduleFileExtensions": ["ts", "js", "json"]
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -22,8 +29,11 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.7.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.2"
   }
