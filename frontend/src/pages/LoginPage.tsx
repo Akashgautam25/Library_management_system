@@ -27,7 +27,7 @@ const LoginPage: React.FC = () => {
         setLoading(true);
         try {
             await login({ email, password });
-            navigate('/books');
+            navigate('/dashboard');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Login failed');
         } finally {

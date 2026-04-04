@@ -38,7 +38,7 @@ const RegisterPage: React.FC = () => {
         setLoading(true);
         try {
             await register({ name, email, password, role });
-            navigate('/books');
+            navigate('/dashboard');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Registration failed');
         } finally {
