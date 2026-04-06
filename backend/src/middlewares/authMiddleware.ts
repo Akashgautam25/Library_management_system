@@ -12,10 +12,7 @@ declare global {
     }
 }
 
-/**
- * Authentication middleware - verifies JWT token
- * SOLID: Single Responsibility - only handles authentication
- */
+
 export const authMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
     try {
         const authHeader = req.headers.authorization;
