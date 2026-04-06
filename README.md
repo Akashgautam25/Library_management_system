@@ -216,8 +216,8 @@ See [docs/diagrams.md](docs/diagrams.md) for:
 | Full Stack Developer | Ansh Sharma |
 | Backend Developer | Rahul kumar diwedi |
 | Frontend Developer | Akash kumar gautam|
-| Database & Architecture | [Member 4 Name] |
-| Testing & Documentation | [Member 5 Name] |
+| Database & Architecture | Harender chhoker |
+| Testing & Documentation | Lakshya |
 
 ---
 
