@@ -3,17 +3,10 @@ import { IUser, IAuthPayload } from '../interfaces';
 import { generateToken } from '../utils/helpers';
 import { UnauthorizedError, ConflictError, NotFoundError } from '../utils/AppError';
 
-/**
- * AuthService - Handles authentication business logic
- * SOLID: Single Responsibility - only handles auth concerns
- * SOLID: Dependency Inversion - depends on repository abstraction via factory
- */
 export class AuthService {
     private userRepo = RepositoryFactory.getUserRepository();
 
-    /**
-     * Register a new user
-     */
+  
     async register(data: { name: string; email: string; password: string; role?: string }): Promise<{ user: Partial<IUser>; token: string }> {
         const existingUser = await this.userRepo.findByEmail(data.email);
         if (existingUser) {
@@ -74,9 +67,7 @@ export class AuthService {
         };
     }
 
-    /**
-     * Get user profile
-     */
+ 
     async getProfile(userId: string): Promise<IUser | null> {
         const user = await this.userRepo.findByIdSafe(userId);
         if (!user) {
