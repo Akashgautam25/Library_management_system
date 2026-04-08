@@ -7,13 +7,11 @@ const TopBar: React.FC = () => {
             <div className="topbar-left">
                 <button className="topbar-menu-btn">☰</button>
                 <Link to="/" className="topbar-brand">
-                    Library <span className="brand-badge">System</span>
+                    📚 Lib<span className="brand-badge">rix</span>
                 </Link>
             </div>
             <div className="topbar-right">
-                <button className="topbar-bell" title="Notifications">
-                    🔔
-                </button>
+                <button className="topbar-bell" title="Notifications">🔔</button>
             </div>
         </header>
     );
