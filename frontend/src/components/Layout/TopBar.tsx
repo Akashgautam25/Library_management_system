@@ -7,7 +7,7 @@ const TopBar: React.FC = () => {
             <div className="topbar-left">
                 <button className="topbar-menu-btn">☰</button>
                 <Link to="/" className="topbar-brand">
-                    📚 Lib<span className="brand-badge">rix</span>
+                    📚 Library <span className="brand-badge">System</span>
                 </Link>
             </div>
             <div className="topbar-right">

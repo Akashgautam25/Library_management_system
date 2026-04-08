@@ -8,14 +8,14 @@ const tiles = [
         label: 'LIBRARY',
         route: '/books',
         emoji: '🏛️',
-        bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        bg: 'linear-gradient(135deg, #2D4A3E 0%, #4A7C59 100%)',
     },
     {
         key: 'borrowers',
-        label: 'BORROWERS LIST',
+        label: 'BORROWERS',
         route: '/admin/users',
         emoji: '👥',
-        bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        bg: 'linear-gradient(135deg, #3A5A2E 0%, #6A9E50 100%)',
         adminOnly: true,
     },
     {
@@ -23,14 +23,14 @@ const tiles = [
         label: 'REPORTS',
         route: '/history',
         emoji: '📊',
-        bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        bg: 'linear-gradient(135deg, #C8860A 0%, #E8A020 100%)',
     },
     {
-        key: 'updates',
+        key: 'manage',
         label: 'MANAGE BOOKS',
         route: '/admin',
         emoji: '📚',
-        bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+        bg: 'linear-gradient(135deg, #4A3E2D 0%, #7C6A4A 100%)',
         adminOnly: true,
     },
     {
@@ -38,14 +38,14 @@ const tiles = [
         label: 'BORROW',
         route: '/issue-return',
         emoji: '📖',
-        bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+        bg: 'linear-gradient(135deg, #2D3E4A 0%, #4A6A7C 100%)',
     },
     {
         key: 'history',
         label: 'MY HISTORY',
         route: '/history',
         emoji: '🕐',
-        bg: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+        bg: 'linear-gradient(135deg, #5A2D2D 0%, #8B4A4A 100%)',
     },
 ];
 
