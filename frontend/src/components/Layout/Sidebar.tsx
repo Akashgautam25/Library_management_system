@@ -1,9 +1,11 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useUI } from '../../context/UIContext';
 
 const Sidebar: React.FC = () => {
     const { user, isAuthenticated, isAdmin, logout } = useAuth();
+    const { sidebarOpen } = useUI();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -12,7 +14,7 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             <div className="sidebar-role">
                 <span className="sidebar-role-icon">◐</span>
                 {isAdmin ? 'ADMIN' : user ? user.name.toUpperCase() : 'GUEST'}

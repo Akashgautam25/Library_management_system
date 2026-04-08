@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { UIProvider, useUI } from './context/UIContext';
 import Sidebar from './components/Layout/Sidebar';
 import TopBar from './components/Layout/TopBar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -14,19 +15,25 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import DashboardPage from './pages/DashboardPage';
 import './index.css';
 
-const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="app-shell">
-        <TopBar />
-        <div className="app-body">
-            <Sidebar />
-            <main className="app-main">{children}</main>
+const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { sidebarOpen } = useUI();
+    return (
+        <div className="app-shell">
+            <TopBar />
+            <div className="app-body">
+                <Sidebar />
+                <main className={`app-main ${sidebarOpen ? '' : 'app-main-expanded'}`}>
+                    {children}
+                </main>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const App: React.FC = () => {
     return (
         <AuthProvider>
+            <UIProvider>
             <Router>
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
@@ -91,6 +98,7 @@ const App: React.FC = () => {
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
             </Router>
+            </UIProvider>
         </AuthProvider>
     );
 };
