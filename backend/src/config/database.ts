@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Singleton — only one DB connection ever created
 class Database {
     private static instance: Database;
     private isConnected = false;
@@ -11,21 +10,16 @@ class Database {
     private constructor() {}
 
     static getInstance(): Database {
-        if (!Database.instance) {
-            Database.instance = new Database();
-        }
+        if (!Database.instance) Database.instance = new Database();
         return Database.instance;
     }
 
     async connect(): Promise<void> {
         if (this.isConnected) return;
-
         const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/library_management';
-
         await mongoose.connect(uri);
         this.isConnected = true;
         console.log('✅ MongoDB connected');
-
         mongoose.connection.on('error', () => { this.isConnected = false; });
         mongoose.connection.on('disconnected', () => { this.isConnected = false; });
     }
