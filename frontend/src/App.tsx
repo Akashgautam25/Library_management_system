@@ -16,11 +16,14 @@ import DashboardPage from './pages/DashboardPage';
 import './index.css';
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { sidebarOpen } = useUI();
+    const { sidebarOpen, closeSidebar } = useUI();
     return (
         <div className="app-shell">
             <TopBar />
             <div className="app-body">
+                {sidebarOpen && (
+                    <div className="sidebar-overlay" onClick={closeSidebar} />
+                )}
                 <Sidebar />
                 <main className={`app-main ${sidebarOpen ? '' : 'app-main-expanded'}`}>
                     {children}

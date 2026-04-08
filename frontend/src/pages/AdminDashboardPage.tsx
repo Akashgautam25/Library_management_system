@@ -157,6 +157,41 @@ const AdminDashboardPage: React.FC = () => {
                                         ))}
                                     </tbody>
                                 </table>
+                                {/* Mobile card list */}
+                                <div className="mobile-card-list">
+                                    {stats.recentTransactions.map((t) => {
+                                        const overdue = t.status === 'issued' && isOverdue(t.dueDate);
+                                        return (
+                                            <div key={t._id} className="mobile-card">
+                                                <div className="mobile-card-title">{getTransactionBookTitle(t)}</div>
+                                                <div className="mobile-card-row">
+                                                    <span className="mobile-card-label">User</span>
+                                                    <span>{getTransactionUserName(t)}</span>
+                                                </div>
+                                                <div className="mobile-card-row">
+                                                    <span className="mobile-card-label">Issued</span>
+                                                    <span>{formatDate(t.issueDate)}</span>
+                                                </div>
+                                                <div className="mobile-card-row">
+                                                    <span className="mobile-card-label">Due</span>
+                                                    <span>{formatDate(t.dueDate)}</span>
+                                                </div>
+                                                <div className="mobile-card-row">
+                                                    <span className="mobile-card-label">Status</span>
+                                                    <span className={`status-badge status-${t.status}`}>
+                                                        {overdue ? 'Overdue' : t.status}
+                                                    </span>
+                                                </div>
+                                                {t.fine > 0 && (
+                                                    <div className="mobile-card-row">
+                                                        <span className="mobile-card-label">Fine</span>
+                                                        <span className="td-fine">₹{t.fine}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
                     </div>

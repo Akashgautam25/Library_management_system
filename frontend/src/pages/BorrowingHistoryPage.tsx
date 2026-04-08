@@ -76,6 +76,50 @@ const BorrowingHistoryPage: React.FC = () => {
                             })}
                         </tbody>
                     </table>
+                    {/* Mobile card list */}
+                    <div className="mobile-card-list">
+                        {transactions.map((t) => {
+                            const book = getBookInfo(t.bookId);
+                            const overdue = t.status === 'issued' && isOverdue(t.dueDate);
+                            const daysLeft = t.status === 'issued' ? getDaysRemaining(t.dueDate) : null;
+                            return (
+                                <div key={t._id} className="mobile-card">
+                                    <div className="mobile-card-title">{book.title}</div>
+                                    <div className="mobile-card-row">
+                                        <span className="mobile-card-label">Author</span>
+                                        <span>{book.author}</span>
+                                    </div>
+                                    <div className="mobile-card-row">
+                                        <span className="mobile-card-label">Issued</span>
+                                        <span>{formatDate(t.issueDate)}</span>
+                                    </div>
+                                    <div className="mobile-card-row">
+                                        <span className="mobile-card-label">Due</span>
+                                        <span>
+                                            {formatDate(t.dueDate)}
+                                            {daysLeft !== null && (
+                                                <span className={`days-badge ${daysLeft < 0 ? 'overdue' : daysLeft <= 3 ? 'warning' : 'ok'}`}>
+                                                    {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d left`}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div className="mobile-card-row">
+                                        <span className="mobile-card-label">Status</span>
+                                        <span className={`status-badge status-${t.status}`}>
+                                            {overdue ? 'Overdue' : t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+                                        </span>
+                                    </div>
+                                    {t.fine > 0 && (
+                                        <div className="mobile-card-row">
+                                            <span className="mobile-card-label">Fine</span>
+                                            <span className="td-fine">₹{t.fine}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
         </div>

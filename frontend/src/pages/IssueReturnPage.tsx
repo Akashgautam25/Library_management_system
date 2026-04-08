@@ -113,6 +113,44 @@ const IssueReturnPage: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
+                {/* Mobile card list */}
+                <div className="mobile-card-list">
+                    {books.map((book) => (
+                        <div key={book._id} className="mobile-card">
+                            <div className="mobile-card-title">{book.title}</div>
+                            <div className="mobile-card-row">
+                                <span className="mobile-card-label">Author</span>
+                                <span>{book.author}</span>
+                            </div>
+                            <div className="mobile-card-row">
+                                <span className="mobile-card-label">ISBN</span>
+                                <span className="td-isbn">{book.isbn}</span>
+                            </div>
+                            <div className="mobile-card-row">
+                                <span className="mobile-card-label">Available</span>
+                                <span className={`availability-badge ${book.availableQuantity > 0 ? 'available' : 'unavailable'}`}>
+                                    {book.availableQuantity}/{book.quantity}
+                                </span>
+                            </div>
+                            <div className="mobile-card-actions">
+                                <button
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => handleIssue(book._id)}
+                                    disabled={book.availableQuantity <= 0 || loadingId === book._id}
+                                >
+                                    Issue
+                                </button>
+                                <button
+                                    className="btn btn-secondary btn-sm"
+                                    onClick={() => handleReturn(book._id)}
+                                    disabled={loadingId === book._id}
+                                >
+                                    Return
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
                 {books.length === 0 && (
                     <div className="empty-state">
                         <p>No books found. Try searching for a book.</p>
