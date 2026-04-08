@@ -30,6 +30,9 @@ const Sidebar: React.FC = () => {
                 <NavLink to="/books" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
                     {isAdmin ? 'INVENTORY' : 'LIBRARY'}
                 </NavLink>
+                <NavLink to="/explore" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+                    EXPLORE
+                </NavLink>
                 {isAuthenticated && (
                     <>
                         <NavLink to="/issue-return" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>

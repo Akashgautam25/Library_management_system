@@ -12,6 +12,7 @@ import IssueReturnPage from './pages/IssueReturnPage';
 import BorrowingHistoryPage from './pages/BorrowingHistoryPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import DashboardPage from './pages/DashboardPage';
+import ExternalBooksPage from './pages/ExternalBooksPage';
 import './index.css';
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -86,6 +87,10 @@ const App: React.FC = () => {
                                 <ProtectedRoute adminOnly><AdminDashboardPage /></ProtectedRoute>
                             </AppLayout>
                         }
+                    />
+                    <Route
+                        path="/explore"
+                        element={<AppLayout><ExternalBooksPage /></AppLayout>}
                     />
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
