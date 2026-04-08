@@ -4,7 +4,7 @@ import BookCard from '../components/Books/BookCard';
 import { BOOK_CATEGORIES } from '../types';
 
 const BookListPage: React.FC = () => {
-    const { books, loading, error, searchBooks, fetchBooks } = useBooks();
+    const { books, loading, error, searchBooks, fetchBooks, fetchByCategory } = useBooks();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -16,7 +16,7 @@ const BookListPage: React.FC = () => {
     const handleCategoryFilter = (category: string) => {
         setSelectedCategory(category);
         if (category) {
-            searchBooks(category);
+            fetchByCategory(category);
         } else {
             fetchBooks();
         }
@@ -32,7 +32,7 @@ const BookListPage: React.FC = () => {
         <div className="page-container">
             <div className="page-header">
                 <h1>📖 Book Collection</h1>
-                <p>Browse and search our library catalog</p>
+                <p>Powered by Open Library — search millions of books</p>
             </div>
 
             <div className="search-section">
@@ -41,7 +41,7 @@ const BookListPage: React.FC = () => {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search by title, author, or category..."
+                        placeholder="Search by title, author, or subject..."
                         className="search-input"
                     />
                     <button type="submit" className="btn btn-primary">Search</button>
@@ -79,7 +79,7 @@ const BookListPage: React.FC = () => {
                 <div className="empty-state">
                     <span className="empty-icon">📚</span>
                     <h3>No books found</h3>
-                    <p>Try adjusting your search or filter criteria</p>
+                    <p>Try a different search term</p>
                 </div>
             ) : (
                 <div className="books-grid">
