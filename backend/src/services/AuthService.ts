@@ -3,85 +3,37 @@ import { IUser, IAuthPayload } from '../interfaces';
 import { generateToken } from '../utils/helpers';
 import { UnauthorizedError, ConflictError, NotFoundError } from '../utils/AppError';
 
-/**
- * AuthService - Handles authentication business logic
- * SOLID: Single Responsibility - only handles auth concerns
- * SOLID: Dependency Inversion - depends on repository abstraction via factory
- */
 export class AuthService {
     private userRepo = RepositoryFactory.getUserRepository();
 
-    /**
-     * Register a new user
-     */
-    async register(data: { name: string; email: string; password: string; role?: string }): Promise<{ user: Partial<IUser>; token: string }> {
-        const existingUser = await this.userRepo.findByEmail(data.email);
-        if (existingUser) {
+    async register(data: { name: string; email: string; password: string; role?: string }) {
+        // Check email not already taken
+        if (await this.userRepo.findByEmail(data.email)) {
             throw new ConflictError('User with this email already exists');
         }
 
         const user = await this.userRepo.create(data as Partial<IUser>);
+        const token = generateToken({ userId: user._id.toString(), email: user.email, role: user.role });
 
-        const payload: IAuthPayload = {
-            userId: user._id.toString(),
-            email: user.email,
-            role: user.role,
-        };
-
-        const token = generateToken(payload);
-
-        return {
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            },
-            token,
-        };
+        return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, token };
     }
 
-    /**
-     * Login user
-     */
-    async login(email: string, password: string): Promise<{ user: Partial<IUser>; token: string }> {
+    async login(email: string, password: string) {
         const user = await this.userRepo.findByEmail(email);
-        if (!user) {
+
+        // Check user exists and password matches
+        if (!user || !(await user.comparePassword(password))) {
             throw new UnauthorizedError('Invalid email or password');
         }
 
-        const isPasswordValid = await user.comparePassword(password);
-        if (!isPasswordValid) {
-            throw new UnauthorizedError('Invalid email or password');
-        }
+        const token = generateToken({ userId: user._id.toString(), email: user.email, role: user.role });
 
-        const payload: IAuthPayload = {
-            userId: user._id.toString(),
-            email: user.email,
-            role: user.role,
-        };
-
-        const token = generateToken(payload);
-
-        return {
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            },
-            token,
-        };
+        return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, token };
     }
 
-    /**
-     * Get user profile
-     */
-    async getProfile(userId: string): Promise<IUser | null> {
+    async getProfile(userId: string) {
         const user = await this.userRepo.findByIdSafe(userId);
-        if (!user) {
-            throw new NotFoundError('User not found');
-        }
+        if (!user) throw new NotFoundError('User not found');
         return user;
     }
 }

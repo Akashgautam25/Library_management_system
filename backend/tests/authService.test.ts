@@ -45,7 +45,7 @@ describe('AuthService.register', () => {
 
         expect(result.token).toBe('mock_jwt_token');
         expect(result.user.email).toBe('john@example.com');
-        expect(result.user.password).toBeUndefined(); // password not returned
+        expect(Object.keys(result.user)).not.toContain('password');
     });
 
     test('throws ConflictError if email already exists', async () => {
