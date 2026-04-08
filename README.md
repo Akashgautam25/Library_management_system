@@ -214,10 +214,10 @@ See [docs/diagrams.md](docs/diagrams.md) for:
 | Role | Contributor |
 | ---- | ----------- |
 | Full Stack Developer | Ansh Sharma |
-| Backend Developer | [Member 2 Name] |
-| Frontend Developer | [Member 3 Name] |
-| Database & Architecture | [Member 4 Name] |
-| Testing & Documentation | [Member 5 Name] |
+| Backend Developer | Rahul kumar diwedi |
+| Frontend Developer | Akash kumar gautam|
+| Database & Architecture | Harender chhoker |
+| Testing & Documentation | Lakshya |
 
 ---
 

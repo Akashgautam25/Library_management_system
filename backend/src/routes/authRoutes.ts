@@ -6,11 +6,11 @@ import { registerValidation, loginValidation } from '../middlewares/validationMi
 const router = Router();
 const authController = new AuthController();
 
-// Public routes
+
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 
-// Protected routes
+
 router.get('/profile', authMiddleware, authController.getProfile);
 
 export default router;
