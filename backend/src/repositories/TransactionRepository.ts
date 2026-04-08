@@ -3,10 +3,16 @@ import TransactionModel from '../models/Transaction';
 import { ITransaction } from '../interfaces';
 
 export class TransactionRepository extends BaseRepository<ITransaction> {
-    constructor() { super(TransactionModel); }
+    constructor() {
+        super(TransactionModel);
+    }
 
     async findByUserId(userId: string): Promise<ITransaction[]> {
-        return this.model.find({ userId }).populate('bookId', 'title author isbn').sort({ createdAt: -1 }).exec();
+        return this.model
+            .find({ userId })
+            .populate('bookId', 'title author isbn')
+            .sort({ createdAt: -1 })
+            .exec();
     }
 
     async findActiveTransaction(userId: string, bookId: string): Promise<ITransaction | null> {
@@ -14,14 +20,17 @@ export class TransactionRepository extends BaseRepository<ITransaction> {
     }
 
     async findOverdueTransactions(): Promise<ITransaction[]> {
-        return this.model.find({ status: 'issued', dueDate: { $lt: new Date() } })
+        const now = new Date();
+        return this.model
+            .find({ status: 'issued', dueDate: { $lt: now } })
             .populate('userId', 'name email')
             .populate('bookId', 'title author')
             .exec();
     }
 
     async findAllActive(): Promise<ITransaction[]> {
-        return this.model.find({ status: 'issued' })
+        return this.model
+            .find({ status: 'issued' })
             .populate('userId', 'name email')
             .populate('bookId', 'title author isbn')
             .sort({ dueDate: 1 })
@@ -29,7 +38,8 @@ export class TransactionRepository extends BaseRepository<ITransaction> {
     }
 
     async findRecent(limit = 10): Promise<ITransaction[]> {
-        return this.model.find()
+        return this.model
+            .find()
             .populate('userId', 'name email')
             .populate('bookId', 'title author')
             .sort({ createdAt: -1 })

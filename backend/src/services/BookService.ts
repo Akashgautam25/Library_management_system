@@ -6,10 +6,13 @@ export class BookService {
     private bookRepo = RepositoryFactory.getBookRepository();
 
     async createBook(data: Partial<IBook>) {
-        if (await this.bookRepo.findByIsbn(data.isbn!)) {
+        const existing = await this.bookRepo.findByIsbn(data.isbn!);
+        if (existing) {
             throw new ConflictError('Book with this ISBN already exists');
         }
-        data.availableQuantity = data.quantity; // available = total on creation
+
+        // set available same as total when first adding
+        data.availableQuantity = data.quantity;
         return this.bookRepo.create(data);
     }
 
@@ -27,11 +30,13 @@ export class BookService {
         const book = await this.bookRepo.findById(id);
         if (!book) throw new NotFoundError('Book not found');
 
-        // If quantity changes, adjust available copies accordingly
         if (data.quantity !== undefined) {
-            data.availableQuantity = book.availableQuantity + (data.quantity - book.quantity);
+            const diff = data.quantity - book.quantity;
+            data.availableQuantity = book.availableQuantity + diff;
+
+            // can't go negative — means some copies are still out
             if (data.availableQuantity < 0) {
-                throw new ValidationError('Cannot reduce quantity below currently issued books');
+                throw new ValidationError('Some copies are still issued, cannot reduce quantity that much');
             }
         }
 
@@ -44,8 +49,9 @@ export class BookService {
         const book = await this.bookRepo.findById(id);
         if (!book) throw new NotFoundError('Book not found');
 
+        // don't allow delete if any copy is currently issued
         if (book.quantity !== book.availableQuantity) {
-            throw new ValidationError('Cannot delete a book that has copies currently issued');
+            throw new ValidationError('Cannot delete book while copies are still issued');
         }
 
         const deleted = await this.bookRepo.delete(id);
@@ -53,7 +59,15 @@ export class BookService {
         return deleted;
     }
 
-    async searchBooks(query: string)          { return this.bookRepo.search(query); }
-    async getBooksByCategory(category: string) { return this.bookRepo.findByCategory(category); }
-    async getTotalBooks()                      { return this.bookRepo.count(); }
+    async searchBooks(query: string) {
+        return this.bookRepo.search(query);
+    }
+
+    async getBooksByCategory(category: string) {
+        return this.bookRepo.findByCategory(category);
+    }
+
+    async getTotalBooks() {
+        return this.bookRepo.count();
+    }
 }

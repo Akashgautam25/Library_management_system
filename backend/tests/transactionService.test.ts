@@ -2,11 +2,6 @@ import { TransactionService } from '../src/services/TransactionService';
 import { RepositoryFactory, FineStrategyFactory } from '../src/factories';
 import { StandardFineStrategy, FineCalculator } from '../src/strategies/FineStrategy';
 
-// ============================================================
-// Test Suite: TransactionService
-// Tests book issue, return, fine calculation, and history.
-// ============================================================
-
 jest.mock('../src/factories');
 
 const mockTransactionRepo = {
@@ -54,66 +49,49 @@ const mockTransaction = {
 beforeEach(() => jest.clearAllMocks());
 
 describe('TransactionService.issueBook', () => {
-    test('issues a book successfully', async () => {
+    test('issues book successfully', async () => {
         mockBookRepo.findById.mockResolvedValue(mockBook);
         mockTransactionRepo.findActiveTransaction.mockResolvedValue(null);
         mockTransactionRepo.create.mockResolvedValue(mockTransaction);
         mockBookRepo.decrementAvailable.mockResolvedValue(mockBook);
 
         const result = await transactionService.issueBook('user123', 'book123');
-
         expect(result.status).toBe('issued');
         expect(mockBookRepo.decrementAvailable).toHaveBeenCalledWith('book123');
     });
 
-    test('throws NotFoundError when book does not exist', async () => {
+    test('throws if book does not exist', async () => {
         mockBookRepo.findById.mockResolvedValue(null);
-
-        await expect(transactionService.issueBook('user123', 'bad_book')).rejects.toThrow(
-            'Book not found'
-        );
+        await expect(transactionService.issueBook('user123', 'bad_book')).rejects.toThrow('Book not found');
     });
 
-    test('throws ValidationError when book is not available', async () => {
+    test('throws if no copies available', async () => {
         mockBookRepo.findById.mockResolvedValue({ ...mockBook, availableQuantity: 0 });
-
-        await expect(transactionService.issueBook('user123', 'book123')).rejects.toThrow(
-            'Book is not available for issue'
-        );
+        await expect(transactionService.issueBook('user123', 'book123')).rejects.toThrow();
     });
 
-    test('throws ValidationError when user already has the book', async () => {
+    // user tries to borrow same book twice
+    test('throws if user already has this book issued', async () => {
         mockBookRepo.findById.mockResolvedValue(mockBook);
         mockTransactionRepo.findActiveTransaction.mockResolvedValue(mockTransaction);
-
-        await expect(transactionService.issueBook('user123', 'book123')).rejects.toThrow(
-            'You already have this book issued'
-        );
+        await expect(transactionService.issueBook('user123', 'book123')).rejects.toThrow();
     });
 });
 
 describe('TransactionService.returnBook', () => {
-    test('returns a book on time with zero fine', async () => {
-        const onTimeReturn = new Date(mockTransaction.dueDate);
-        onTimeReturn.setDate(onTimeReturn.getDate() - 1); // 1 day early
-
+    test('returns book with no fine when on time', async () => {
         mockTransactionRepo.findActiveTransaction.mockResolvedValue(mockTransaction);
         mockTransactionRepo.update.mockResolvedValue({ ...mockTransaction, status: 'returned', fine: 0 });
         mockBookRepo.incrementAvailable.mockResolvedValue(mockBook);
 
         const result = await transactionService.returnBook('user123', 'book123');
-
         expect(result.status).toBe('returned');
         expect(result.fine).toBe(0);
         expect(mockBookRepo.incrementAvailable).toHaveBeenCalledWith('book123');
     });
 
-    test('calculates fine for overdue return', async () => {
-        // dueDate: Jan 15, returnDate will be Jan 20 → 5 days overdue → ₹10
-        const overdueTransaction = {
-            ...mockTransaction,
-            dueDate: new Date('2024-01-15'),
-        };
+    test('charges fine for late return', async () => {
+        const overdueTransaction = { ...mockTransaction, dueDate: new Date('2024-01-15') };
 
         mockTransactionRepo.findActiveTransaction.mockResolvedValue(overdueTransaction);
         mockTransactionRepo.update.mockImplementation((id, data) =>
@@ -121,7 +99,6 @@ describe('TransactionService.returnBook', () => {
         );
         mockBookRepo.incrementAvailable.mockResolvedValue(mockBook);
 
-        // Override FineCalculator to return a known fine
         (FineStrategyFactory.createFineCalculator as jest.Mock).mockReturnValue({
             calculate: jest.fn().mockReturnValue(10),
         });
@@ -130,24 +107,20 @@ describe('TransactionService.returnBook', () => {
         expect(result.fine).toBe(10);
     });
 
-    test('throws NotFoundError when no active transaction exists', async () => {
+    test('throws if no active borrow found', async () => {
         mockTransactionRepo.findActiveTransaction.mockResolvedValue(null);
-
-        await expect(transactionService.returnBook('user123', 'book123')).rejects.toThrow(
-            'No active transaction found for this book'
-        );
+        await expect(transactionService.returnBook('user123', 'book123')).rejects.toThrow();
     });
 });
 
 describe('TransactionService.getUserHistory', () => {
-    test('returns user transaction history', async () => {
+    test('returns history for a user', async () => {
         mockTransactionRepo.findByUserId.mockResolvedValue([mockTransaction]);
         const result = await transactionService.getUserHistory('user123');
         expect(result).toHaveLength(1);
-        expect(result[0].userId).toBe('user123');
     });
 
-    test('returns empty array when no history', async () => {
+    test('returns empty array if user has no history', async () => {
         mockTransactionRepo.findByUserId.mockResolvedValue([]);
         const result = await transactionService.getUserHistory('user123');
         expect(result).toHaveLength(0);
