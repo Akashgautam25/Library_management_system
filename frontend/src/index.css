@@ -558,6 +558,15 @@ body {
     box-shadow: var(--shadow);
 }
 
+.book-details-cover {
+    width: 160px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
 .book-details-header {
     display: flex;
     justify-content: space-between;

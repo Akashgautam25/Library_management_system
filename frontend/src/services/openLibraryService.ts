@@ -39,6 +39,45 @@ const mapToBook = (doc: OLSearchDoc): Book => ({
 });
 
 export const openLibraryService = {
+    async getBookByWorkId(workId: string): Promise<Book> {
+        const res = await axios.get(`${OL_BASE}/works/${workId}.json`);
+        const w = res.data;
+
+        // fetch description — can be string or object
+        let description = '';
+        if (typeof w.description === 'string') description = w.description;
+        else if (w.description?.value) description = w.description.value;
+
+        // get cover
+        const coverId = w.covers?.[0];
+        const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : '';
+
+        // get author name
+        let author = 'Unknown Author';
+        if (w.authors?.[0]?.author?.key) {
+            try {
+                const authorRes = await axios.get(`${OL_BASE}${w.authors[0].author.key}.json`);
+                author = authorRes.data.name || 'Unknown Author';
+            } catch {}
+        }
+
+        return {
+            _id: workId,
+            title: w.title,
+            author,
+            isbn: '',
+            category: w.subjects?.[0] || 'Other',
+            description,
+            quantity: 1,
+            availableQuantity: 1,
+            publishedYear: w.first_publish_date ? parseInt(w.first_publish_date) : 0,
+            publisher: '',
+            coverUrl,
+            createdAt: '',
+            updatedAt: '',
+        };
+    },
+
     async searchBooks(query: string, limit = 20): Promise<Book[]> {
         const res = await axios.get<OLSearchResponse>(`${OL_BASE}/search.json`, {
             params: { q: query, limit, fields: 'key,title,author_name,isbn,subject,first_publish_year,publisher,cover_i' },

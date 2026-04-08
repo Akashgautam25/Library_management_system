@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Book } from '../types';
 import { bookService } from '../services/bookService';
+import { openLibraryService } from '../services/openLibraryService';
 import { transactionService } from '../services/transactionService';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/formatters';
+
+// MongoDB ObjectIds are 24 hex chars — Open Library IDs are like OL45804W
+const isMongoId = (id: string) => /^[a-f\d]{24}$/i.test(id);
 
 const BookDetailsPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -18,7 +22,13 @@ const BookDetailsPage: React.FC = () => {
     useEffect(() => {
         const fetchBook = async () => {
             try {
-                const data = await bookService.getBookById(id!);
+                let data: Book;
+                if (isMongoId(id!)) {
+                    data = await bookService.getBookById(id!);
+                } else {
+                    // Open Library ID — fetch from Open Library API
+                    data = await openLibraryService.getBookByWorkId(id!);
+                }
                 setBook(data);
             } catch {
                 setMessage({ type: 'error', text: 'Book not found' });
@@ -88,6 +98,10 @@ const BookDetailsPage: React.FC = () => {
             )}
 
             <div className="book-details">
+                {book.coverUrl && (
+                    <img src={book.coverUrl} alt={book.title} className="book-details-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                )}
                 <div className="book-details-header">
                     <div>
                         <span className={`category-tag ${book.category.toLowerCase().replace(/[^a-z]/g, '-')}`}>
@@ -139,12 +153,14 @@ const BookDetailsPage: React.FC = () => {
                     </div>
                 )}
 
-                <div className="book-details-meta">
-                    <span>Added: {formatDate(book.createdAt)}</span>
-                    <span>Updated: {formatDate(book.updatedAt)}</span>
-                </div>
+                {book.createdAt && (
+                    <div className="book-details-meta">
+                        <span>Added: {formatDate(book.createdAt)}</span>
+                        <span>Updated: {formatDate(book.updatedAt)}</span>
+                    </div>
+                )}
 
-                {isAuthenticated && (
+                {isAuthenticated && isMongoId(book._id) && (
                     <div className="book-actions">
                         <button
                             className="btn btn-primary"
