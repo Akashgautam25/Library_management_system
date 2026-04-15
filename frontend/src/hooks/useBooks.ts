@@ -4,7 +4,7 @@ import { openLibraryService } from '../services/openLibraryService';
 import { bookService } from '../services/bookService';
 import { useAuth } from '../context/AuthContext';
 
-export const useBooks = () => {
+export const useBooks = (autoFetch = true) => {
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -69,8 +69,8 @@ export const useBooks = () => {
     }, []);
 
     useEffect(() => {
-        fetchBooks();
-    }, [fetchBooks]);
+        if (autoFetch) fetchBooks();
+    }, [fetchBooks, autoFetch]);
 
     return { books, loading, error, fetchBooks, searchBooks, fetchByCategory, fetchMyBooks };
 };

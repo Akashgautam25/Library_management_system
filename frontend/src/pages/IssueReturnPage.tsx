@@ -1,20 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useBooks } from '../hooks/useBooks';
 import { useTransactions } from '../hooks/useTransactions';
+import { bookService } from '../services/bookService';
 
 const IssueReturnPage: React.FC = () => {
-    const { books, searchBooks, fetchBooks } = useBooks();
+    const { books, loading, fetchMyBooks } = useBooks(false);
     const { issueBook, returnBook } = useTransactions();
+
+    useEffect(() => {
+        fetchMyBooks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const [searchQuery, setSearchQuery] = useState('');
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [searchResults, setSearchResults] = React.useState<typeof books>([]);
+    const [isSearching, setIsSearching] = React.useState(false);
 
-    const handleSearch = (e: React.FormEvent) => {
+    const displayBooks = isSearching ? searchResults : books;
+
+    const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            searchBooks(searchQuery);
+            // search backend books
+            try {
+                const results = await bookService.searchBooks(searchQuery);
+                // update books via fetchMyBooks after setting results manually
+                // use fetchMyBooks as fallback, but show search results directly
+                setSearchResults(results);
+                setIsSearching(true);
+            } catch {
+                setMessage({ type: 'error', text: 'Search failed' });
+            }
         } else {
-            fetchBooks();
+            setIsSearching(false);
+            fetchMyBooks();
         }
     };
 
@@ -24,7 +44,7 @@ const IssueReturnPage: React.FC = () => {
         try {
             await issueBook(bookId);
             setMessage({ type: 'success', text: 'Book issued successfully!' });
-            fetchBooks();
+            fetchMyBooks();
         } catch (err: any) {
             setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to issue book' });
         } finally {
@@ -41,7 +61,7 @@ const IssueReturnPage: React.FC = () => {
                 ? `Book returned. Fine: ₹${transaction.fine}`
                 : 'Book returned successfully!';
             setMessage({ type: 'success', text: msg });
-            fetchBooks();
+            fetchMyBooks();
         } catch (err: any) {
             setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to return book' });
         } finally {
@@ -83,7 +103,7 @@ const IssueReturnPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {books.map((book) => (
+                        {displayBooks.map((book) => (
                             <tr key={book._id}>
                                 <td className="td-title">{book.title}</td>
                                 <td>{book.author}</td>
@@ -115,7 +135,7 @@ const IssueReturnPage: React.FC = () => {
                 </table>
                 {/* Mobile card list */}
                 <div className="mobile-card-list">
-                    {books.map((book) => (
+                    {displayBooks.map((book) => (
                         <div key={book._id} className="mobile-card">
                             <div className="mobile-card-title">{book.title}</div>
                             <div className="mobile-card-row">
@@ -151,7 +171,7 @@ const IssueReturnPage: React.FC = () => {
                         </div>
                     ))}
                 </div>
-                {books.length === 0 && (
+                {displayBooks.length === 0 && (
                     <div className="empty-state">
                         <p>No books found. Try searching for a book.</p>
                     </div>
