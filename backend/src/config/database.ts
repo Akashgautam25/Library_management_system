@@ -7,7 +7,7 @@ class Database {
     private static instance: Database;
     private isConnected = false;
 
-    private constructor() {}
+    private constructor() { }
 
     static getInstance(): Database {
         if (!Database.instance) Database.instance = new Database();
@@ -19,7 +19,7 @@ class Database {
         const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/library_management';
         await mongoose.connect(uri);
         this.isConnected = true;
-        console.log('✅ MongoDB connected');
+        console.log('MongoDB connected');
         mongoose.connection.on('error', () => { this.isConnected = false; });
         mongoose.connection.on('disconnected', () => { this.isConnected = false; });
     }

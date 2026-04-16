@@ -71,9 +71,9 @@ const seedBooks = async () => {
             }
         }
 
-        console.log('✅ Seeding completed successfully');
+        console.log('Seeding completed successfully');
     } catch (error) {
-        console.error('❌ Seeding failed:', error);
+        console.error('Seeding failed:', error);
     } finally {
         await db.disconnect();
         process.exit(0);

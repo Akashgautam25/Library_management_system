@@ -16,7 +16,7 @@ export default app;
 if (process.env.NODE_ENV !== 'production') {
     Database.getInstance().connect().then(() => {
         app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
+            console.log(`Server running on http://localhost:${PORT}`);
         });
     }).catch((error) => {
         console.error('Failed to start server:', error);
