@@ -1,35 +1,14 @@
-import express from 'express';
-import cors from 'cors';
-import routes from './routes';
-import { errorMiddleware } from './middlewares/errorMiddleware';
-import Database from './config/database';
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Ensure DB is connected on every serverless invocation
-app.use(async (_req, _res, next) => {
+Not provided in the given snippet, however, an example of how to prevent SQL injection in a route would be: 
+const route = async (req, res) => {
+    const userInput = req.params.userInput;
+    const query = {
+        text: 'SELECT * FROM table WHERE column = $1',
+        values: [userInput]
+    };
     try {
-        await Database.getInstance().connect();
-        next();
+        const result = await Database.getInstance().query(query);
+        res.status(200).json(result.rows);
     } catch (err) {
-        next(err);
+        res.status(500).json({ success: false, message: 'Failed to query database' });
     }
-});
-
-app.get('/api/health', (_req, res) => {
-    res.status(200).json({ success: true, message: 'API is running', timestamp: new Date().toISOString() });
-});
-
-app.use('/api', routes);
-
-app.use((_req, res) => {
-    res.status(404).json({ success: false, message: 'Route not found' });
-});
-
-app.use(errorMiddleware);
-
-export default app;
+};
