@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-
+import { MongoClient } from 'mongodb';
 dotenv.config();
 
 class Database {
@@ -17,17 +17,26 @@ class Database {
     async connect(): Promise<void> {
         if (this.isConnected) return;
         const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/library_management';
-        await mongoose.connect(uri);
+        const client = new MongoClient(uri);
+        await client.connect();
         this.isConnected = true;
         console.log('MongoDB connected');
-        mongoose.connection.on('error', () => { this.isConnected = false; });
-        mongoose.connection.on('disconnected', () => { this.isConnected = false; });
+        client.on('error', () => { this.isConnected = false; });
+        client.on('disconnected', () => { this.isConnected = false; });
     }
 
     async disconnect(): Promise<void> {
         if (!this.isConnected) return;
-        await mongoose.disconnect();
+        await this.client.close();
         this.isConnected = false;
+    }
+
+    private get client(): MongoClient {
+        return this._client;
+    }
+
+    private set client(value: MongoClient) {
+        this._client = value;
     }
 }
 
