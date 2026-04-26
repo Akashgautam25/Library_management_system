@@ -12,9 +12,14 @@ export const transactionService = {
         return response.data.data!;
     },
 
-    async getMyHistory(): Promise<Transaction[]> {
-        const response = await api.get<ApiResponse<Transaction[]>>('/transactions/history');
-        return response.data.data!;
+    async getMyHistory(status?: string): Promise<Transaction[]> {
+        // Backend returns PaginatedResult which has { data, pagination }. The frontend hook handles .data.data when it was unpaginated,
+        // Wait, looking at TransactionService.ts, getUserHistory returns { data, pagination }. So the response.data.data has { data, pagination }.
+        // Actually I'll just let the backend handle the query param.
+        const url = status ? `/transactions/history?status=${status}` : '/transactions/history';
+        const response = await api.get<ApiResponse<any>>(url);
+        // Extract data array from the paginated response
+        return response.data.data.data || response.data.data;
     },
 
     async getActiveTransactions(): Promise<Transaction[]> {

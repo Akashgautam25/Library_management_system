@@ -10,6 +10,7 @@ import { Document } from 'mongoose';
  * Base document interface extending Mongoose Document
  */
 export interface IBaseDocument extends Document {
+    tenantId: string;
     createdAt: Date;
     updatedAt: Date;
 }

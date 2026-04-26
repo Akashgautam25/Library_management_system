@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { validateEmail } from '../utils/validators';
+import { Mail, Lock, Loader2, Eye, EyeOff, BookOpen } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
@@ -16,11 +19,11 @@ const LoginPage: React.FC = () => {
         setError('');
 
         if (!validateEmail(email)) {
-            setError('Please enter a valid email');
+            setError('Please enter a valid email address.');
             return;
         }
         if (password.length < 6) {
-            setError('Password must be at least 6 characters');
+            setError('Password must be at least 6 characters.');
             return;
         }
 
@@ -29,57 +32,111 @@ const LoginPage: React.FC = () => {
             await login({ email, password });
             navigate('/dashboard');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Login failed');
+            setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="auth-page">
-            <div className="auth-card">
-                <div className="auth-header">
-                    <span className="auth-icon">📚</span>
-                    <h1>Welcome Back</h1>
-                    <p>Sign in to your Library account</p>
+        <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+            {/* Background Blur Effects */}
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent/20 blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none" />
+
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="w-full max-w-md"
+            >
+                <div className="bg-surface/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                    
+                    {/* Header */}
+                    <div className="text-center mb-8 relative z-10">
+                        <div className="w-16 h-16 bg-gradient-to-tr from-accent to-purple-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-6 shadow-accent/20">
+                            <BookOpen className="w-8 h-8 text-white" />
+                        </div>
+                        <h1 className="text-3xl font-bold text-primaryText mb-2 tracking-tight">Welcome back</h1>
+                        <p className="text-secondaryText text-sm">Sign in to your Library OS workspace</p>
+                    </div>
+
+                    {/* Error Toast */}
+                    <AnimatePresence>
+                        {error && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl mb-6 text-sm text-center flex items-center justify-center gap-2"
+                            >
+                                <span>{error}</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-secondaryText ml-1">Email</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Mail className="h-5 w-5 text-secondaryText/50" />
+                                </div>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 text-primaryText text-sm rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent block pl-11 p-3.5 transition-all outline-none"
+                                    placeholder="name@library.com"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-secondaryText ml-1">Password</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Lock className="h-5 w-5 text-secondaryText/50" />
+                                </div>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 text-primaryText text-sm rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent block pl-11 pr-11 p-3.5 transition-all outline-none"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-secondaryText hover:text-primaryText transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-accent hover:bg-accent/90 text-white font-medium rounded-xl text-sm px-5 py-3.5 text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-lg shadow-accent/20 mt-4"
+                        >
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
+                        </button>
+                    </form>
+
+                    <div className="mt-8 text-center relative z-10">
+                        <p className="text-sm text-secondaryText">
+                            Don't have an account?{' '}
+                            <Link to="/register" className="font-medium text-accent hover:text-accent/80 hover:underline transition-all">
+                                Request access
+                            </Link>
+                        </p>
+                    </div>
                 </div>
-
-                {error && <div className="alert alert-error">{error}</div>}
-
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
-                            required
-                        />
-                    </div>
-
-                    <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-                        {loading ? 'Signing in...' : 'Sign In'}
-                    </button>
-                </form>
-
-                <p className="auth-footer">
-                    Don't have an account? <Link to="/register">Register here</Link>
-                </p>
-            </div>
+            </motion.div>
         </div>
     );
 };

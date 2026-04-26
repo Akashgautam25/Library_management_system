@@ -2,16 +2,13 @@ import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { IUser } from '../interfaces';
 
-// ============================================================
-// OOP Concept: Encapsulation
-// The password hashing logic is encapsulated within the model
-// pre-save hook, hiding the complexity from consumers.
-// The comparePassword method provides a clean interface to
-// verify passwords without exposing the hashing algorithm.
-// ============================================================
-
 const UserSchema: Schema = new Schema(
     {
+        tenantId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Tenant',
+            required: [true, 'Tenant ID is required'],
+        },
         name: {
             type: String,
             required: [true, 'Name is required'],
@@ -22,7 +19,6 @@ const UserSchema: Schema = new Schema(
         email: {
             type: String,
             required: [true, 'Email is required'],
-            unique: true,
             trim: true,
             lowercase: true,
             match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
@@ -31,12 +27,17 @@ const UserSchema: Schema = new Schema(
             type: String,
             required: [true, 'Password is required'],
             minlength: [6, 'Password must be at least 6 characters'],
-            select: false, // Don't include password in queries by default
+            select: false,
         },
         role: {
             type: String,
             enum: ['admin', 'student'],
             default: 'student',
+        },
+        refreshToken: {
+            type: String,
+            select: false,
+            default: null,
         },
     },
     {
@@ -44,16 +45,19 @@ const UserSchema: Schema = new Schema(
     }
 );
 
+// Indexes
+UserSchema.index({ tenantId: 1, email: 1 }, { unique: true });
+UserSchema.index({ tenantId: 1, role: 1 });
+
 // Hash password before saving
 UserSchema.pre<IUser>('save', async function (next) {
     if (!this.isModified('password')) return next();
-
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
-// Instance method to compare passwords (Encapsulation)
+// Instance method to compare passwords
 UserSchema.methods.comparePassword = async function (
     candidatePassword: string
 ): Promise<boolean> {

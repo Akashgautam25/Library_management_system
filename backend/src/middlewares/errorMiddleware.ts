@@ -1,17 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/AppError';
+import logger from '../config/logger';
 
-/**
- * Global error handling middleware
- * SOLID: Single Responsibility - centralized error handling
- */
 export const errorMiddleware = (
     err: Error,
-    _req: Request,
+    req: Request,
     res: Response,
     _next: NextFunction
 ): void => {
-    // Default error values
     let statusCode = 500;
     let message = 'Internal Server Error';
     let isOperational = false;
@@ -22,43 +18,26 @@ export const errorMiddleware = (
         isOperational = err.isOperational;
     }
 
-    // Mongoose validation error
-    if (err.name === 'ValidationError') {
-        statusCode = 400;
-        message = err.message;
-        isOperational = true;
-    }
+    if (err.name === 'ValidationError') { statusCode = 400; message = err.message; isOperational = true; }
+    if ((err as any).code === 11000) { statusCode = 409; message = 'Duplicate entry found'; isOperational = true; }
+    if (err.name === 'CastError') { statusCode = 400; message = 'Invalid ID format'; isOperational = true; }
+    if (err.name === 'JsonWebTokenError') { statusCode = 401; message = 'Invalid token'; isOperational = true; }
+    if (err.name === 'TokenExpiredError') { statusCode = 401; message = 'Token expired'; isOperational = true; }
 
-    // Mongoose duplicate key error
-    if ((err as any).code === 11000) {
-        statusCode = 409;
-        message = 'Duplicate entry found';
-        isOperational = true;
-    }
+    // Log with structured context
+    const logPayload = {
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        statusCode,
+        message: err.message,
+        stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
+    };
 
-    // Mongoose cast error (invalid ObjectId)
-    if (err.name === 'CastError') {
-        statusCode = 400;
-        message = 'Invalid ID format';
-        isOperational = true;
-    }
-
-    // JWT errors
-    if (err.name === 'JsonWebTokenError') {
-        statusCode = 401;
-        message = 'Invalid token';
-        isOperational = true;
-    }
-
-    if (err.name === 'TokenExpiredError') {
-        statusCode = 401;
-        message = 'Token expired';
-        isOperational = true;
-    }
-
-    // Log non-operational errors
-    if (!isOperational) {
-        console.error('❌ Unexpected Error:', err);
+    if (!isOperational || statusCode >= 500) {
+        logger.error('Unhandled error', logPayload);
+    } else {
+        logger.warn('Operational error', { ...logPayload, stack: undefined });
     }
 
     res.status(statusCode).json({

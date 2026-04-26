@@ -3,130 +3,125 @@ import { ITransaction } from '../interfaces';
 import { NotFoundError, ValidationError } from '../utils/AppError';
 import { calculateDueDate } from '../utils/helpers';
 import { MAX_BORROW_DAYS, TRANSACTION_STATUS } from '../utils/constants';
+import { activityLogService } from './ActivityLogService';
+import { parsePaginationQuery, parseSortString, buildPaginationMeta, PaginatedResult } from '../utils/pagination';
+import { Request } from 'express';
 
-/**
- * TransactionService - Handles book issue/return business logic
- * SOLID: Single Responsibility - only handles transaction operations
- * Uses Strategy Pattern for fine calculation via FineStrategyFactory
- */
 export class TransactionService {
     private transactionRepo = RepositoryFactory.getTransactionRepository();
     private bookRepo = RepositoryFactory.getBookRepository();
 
-    /**
-     * Issue a book to a user
-     */
-    async issueBook(userId: string, bookId: string): Promise<ITransaction> {
-        // Check if book exists and is available
+    async issueBook(userId: string, bookId: string, req?: Request): Promise<ITransaction> {
         const book = await this.bookRepo.findById(bookId);
-        if (!book) {
-            throw new NotFoundError('Book not found');
-        }
+        if (!book) throw new NotFoundError('Book not found');
+        if (book.availableQuantity <= 0) throw new ValidationError('Book is not available for issue');
 
-        if (book.availableQuantity <= 0) {
-            throw new ValidationError('Book is not available for issue');
-        }
-
-        // Check if user already has this book issued
         const existingTransaction = await this.transactionRepo.findActiveTransaction(userId, bookId);
-        if (existingTransaction) {
-            throw new ValidationError('You already have this book issued');
-        }
+        if (existingTransaction) throw new ValidationError('You already have this book issued');
 
-        // Create transaction
         const issueDate = new Date();
         const dueDate = calculateDueDate(issueDate, MAX_BORROW_DAYS);
 
         const transaction = await this.transactionRepo.create({
-            userId,
-            bookId,
-            issueDate,
-            dueDate,
-            status: TRANSACTION_STATUS.ISSUED,
-            fine: 0,
+            userId, bookId, issueDate, dueDate,
+            status: TRANSACTION_STATUS.BORROWED, fine: 0,
         } as Partial<ITransaction>);
 
-        // Decrement book availability
         await this.bookRepo.decrementAvailable(bookId);
+
+        // Fire & forget activity log
+        if (req?.user) {
+            activityLogService.log(userId, req.user.email, 'BOOK_ISSUED', bookId, 'Book',
+                { bookTitle: book.title }, req);
+        }
 
         return transaction;
     }
 
-    /**
-     * Return a book
-     * Uses Strategy Pattern for fine calculation
-     */
-    async returnBook(userId: string, bookId: string): Promise<ITransaction> {
+    async returnBook(userId: string, bookId: string, req?: Request): Promise<ITransaction> {
         const transaction = await this.transactionRepo.findActiveTransaction(userId, bookId);
-        if (!transaction) {
-            throw new NotFoundError('No active transaction found for this book');
-        }
+        if (!transaction) throw new NotFoundError('No active transaction found for this book');
 
         const returnDate = new Date();
-
-        // Strategy Pattern: Use FineCalculator to compute fine
         const fineCalculator = FineStrategyFactory.createFineCalculator('standard');
         const fine = fineCalculator.calculate(transaction.dueDate, returnDate);
 
-        // Update transaction
         const updatedTransaction = await this.transactionRepo.update(transaction._id.toString(), {
-            returnDate,
-            fine,
-            status: TRANSACTION_STATUS.RETURNED,
+            returnDate, fine, status: TRANSACTION_STATUS.RETURNED,
         } as Partial<ITransaction>);
 
-        if (!updatedTransaction) {
-            throw new NotFoundError('Transaction not found');
-        }
-
-        // Increment book availability
+        if (!updatedTransaction) throw new NotFoundError('Transaction not found');
         await this.bookRepo.incrementAvailable(bookId);
+
+        // Fire & forget activity log
+        if (req?.user) {
+            const book = await this.bookRepo.findById(bookId);
+            activityLogService.log(userId, req.user.email, 'BOOK_RETURNED', bookId, 'Book',
+                { bookTitle: book?.title, fine }, req);
+        }
 
         return updatedTransaction;
     }
 
-    /**
-     * Get borrowing history for a user
-     */
-    async getUserHistory(userId: string): Promise<ITransaction[]> {
-        return this.transactionRepo.findByUserId(userId);
+    async getUserHistory(userId: string, query: Record<string, any> = {}): Promise<PaginatedResult<ITransaction>> {
+        const { page, limit, sort } = parsePaginationQuery(query);
+        const filter = { userId, ...(query.status ? { status: query.status } : {}) };
+        const sortObj = parseSortString(sort);
+
+        const [data, total] = await Promise.all([
+            (this.transactionRepo as any).model
+                .find(filter).sort(sortObj).skip((page - 1) * limit).limit(limit)
+                .populate('bookId', 'title author isbn category').lean(),
+            (this.transactionRepo as any).model.countDocuments(filter),
+        ]);
+
+        return { data, pagination: buildPaginationMeta(page, limit, total) };
     }
 
-    /**
-     * Get all active transactions (admin)
-     */
-    async getActiveTransactions(): Promise<ITransaction[]> {
-        return this.transactionRepo.findAllActive();
+    async getActiveTransactions(query: Record<string, any> = {}): Promise<PaginatedResult<ITransaction>> {
+        const { page, limit } = parsePaginationQuery(query);
+        const filter = { status: TRANSACTION_STATUS.BORROWED };
+
+        const [data, total] = await Promise.all([
+            (this.transactionRepo as any).model
+                .find(filter).sort({ dueDate: 1 }).skip((page - 1) * limit).limit(limit)
+                .populate('bookId', 'title author isbn').populate('userId', 'name email').lean(),
+            (this.transactionRepo as any).model.countDocuments(filter),
+        ]);
+
+        return { data, pagination: buildPaginationMeta(page, limit, total) };
     }
 
-    /**
-     * Get overdue transactions (admin)
-     */
-    async getOverdueTransactions(): Promise<ITransaction[]> {
-        return this.transactionRepo.findOverdueTransactions();
+    async getOverdueTransactions(query: Record<string, any> = {}): Promise<PaginatedResult<ITransaction>> {
+        const { page, limit } = parsePaginationQuery(query);
+        const filter = { status: TRANSACTION_STATUS.BORROWED, dueDate: { $lt: new Date() } };
+
+        const [data, total] = await Promise.all([
+            (this.transactionRepo as any).model
+                .find(filter).sort({ dueDate: 1 }).skip((page - 1) * limit).limit(limit)
+                .populate('bookId', 'title author isbn').populate('userId', 'name email').lean(),
+            (this.transactionRepo as any).model.countDocuments(filter),
+        ]);
+
+        return { data, pagination: buildPaginationMeta(page, limit, total) };
     }
 
-    /**
-     * Get recent transactions (admin dashboard)
-     */
-    async getRecentTransactions(limit: number = 10): Promise<ITransaction[]> {
-        return this.transactionRepo.findRecent(limit);
+    async getRecentTransactions(limit = 10): Promise<ITransaction[]> {
+        return (this.transactionRepo as any).model
+            .find({}).sort({ createdAt: -1 }).limit(limit)
+            .populate('bookId', 'title author').populate('userId', 'name email').lean();
     }
 
-    /**
-     * Get total active issue count
-     */
     async getActiveIssueCount(): Promise<number> {
-        return this.transactionRepo.count({ status: TRANSACTION_STATUS.ISSUED });
+        return this.transactionRepo.count({ status: TRANSACTION_STATUS.BORROWED });
     }
 
-    /**
-     * Get overdue count
-     */
     async getOverdueCount(): Promise<number> {
-        return this.transactionRepo.count({
-            status: TRANSACTION_STATUS.ISSUED,
-            dueDate: { $lt: new Date() },
-        });
+        return this.transactionRepo.count({ status: TRANSACTION_STATUS.BORROWED, dueDate: { $lt: new Date() } });
+    }
+
+    // Legacy methods for backward compat
+    async getUserHistoryLegacy(userId: string): Promise<ITransaction[]> {
+        return this.transactionRepo.findByUserId(userId);
     }
 }

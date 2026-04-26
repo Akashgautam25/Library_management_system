@@ -3,6 +3,11 @@ import { ITransaction } from '../interfaces';
 
 const TransactionSchema: Schema = new Schema(
     {
+        tenantId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Tenant',
+            required: [true, 'Tenant ID is required'],
+        },
         userId: {
             type: Schema.Types.ObjectId,
             ref: 'User',
@@ -32,8 +37,8 @@ const TransactionSchema: Schema = new Schema(
         },
         status: {
             type: String,
-            enum: ['issued', 'returned', 'overdue'],
-            default: 'issued',
+            enum: ['borrowed', 'returned', 'overdue'],
+            default: 'borrowed',
         },
     },
     {
@@ -41,8 +46,11 @@ const TransactionSchema: Schema = new Schema(
     }
 );
 
-// Indexes for efficient queries
-TransactionSchema.index({ userId: 1, status: 1 });
-TransactionSchema.index({ bookId: 1, status: 1 });
+// Compound indexes for efficient queries
+TransactionSchema.index({ tenantId: 1, userId: 1, status: 1 });
+TransactionSchema.index({ tenantId: 1, bookId: 1, status: 1 });
+TransactionSchema.index({ tenantId: 1, userId: 1, bookId: 1, status: 1 }); // prevent duplicate issue check
+TransactionSchema.index({ tenantId: 1, dueDate: 1, status: 1 });           // overdue queries
+TransactionSchema.index({ tenantId: 1, createdAt: -1 });                   // recent transactions sort
 
 export default mongoose.model<ITransaction>('Transaction', TransactionSchema);

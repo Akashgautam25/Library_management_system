@@ -3,6 +3,11 @@ import { IBook } from '../interfaces';
 
 const BookSchema: Schema = new Schema(
     {
+        tenantId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Tenant',
+            required: [true, 'Tenant ID is required'],
+        },
         title: {
             type: String,
             required: [true, 'Title is required'],
@@ -18,7 +23,6 @@ const BookSchema: Schema = new Schema(
         isbn: {
             type: String,
             required: [true, 'ISBN is required'],
-            unique: true,
             trim: true,
         },
         category: {
@@ -69,7 +73,12 @@ const BookSchema: Schema = new Schema(
     }
 );
 
-// Text index for search functionality
-BookSchema.index({ title: 'text', author: 'text', category: 'text' });
+// Text index for full-text search
+BookSchema.index({ tenantId: 1, title: 'text', author: 'text', isbn: 'text', category: 'text' });
+// Compound indexes for common query patterns
+BookSchema.index({ tenantId: 1, isbn: 1 }, { unique: true });
+BookSchema.index({ tenantId: 1, category: 1, availableQuantity: 1 });
+BookSchema.index({ tenantId: 1, createdAt: -1 });
+BookSchema.index({ tenantId: 1, availableQuantity: 1 });
 
 export default mongoose.model<IBook>('Book', BookSchema);

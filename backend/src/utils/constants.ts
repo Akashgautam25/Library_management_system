@@ -4,7 +4,7 @@ export const ROLES = {
 } as const;
 
 export const TRANSACTION_STATUS = {
-    ISSUED: 'issued',
+    BORROWED: 'borrowed',
     RETURNED: 'returned',
     OVERDUE: 'overdue',
 } as const;
