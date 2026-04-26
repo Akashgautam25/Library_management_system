@@ -4,7 +4,7 @@
   "description": "Library Management System - Backend API",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm install && tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "seed": "ts-node src/seeds/bookSeeder.ts",
