@@ -1,0 +1,21 @@
+import { Router } from 'express';
+import { UserController } from '../controllers/UserController';
+import { authMiddleware } from '../middlewares/authMiddleware';
+import { roleMiddleware } from '../middlewares/roleMiddleware';
+import { idParamValidation } from '../middlewares/validationMiddleware';
+
+const router = Router();
+const userController = new UserController();
+
+// All user routes require admin access
+router.use(authMiddleware, roleMiddleware('admin'));
+
+router.get('/', userController.getAllUsers);
+router.get('/stats', userController.getAllUsersWithStats);
+router.get('/students', userController.getAllStudents);
+router.get('/:id', idParamValidation, userController.getUserById);
+router.patch('/:id/block', idParamValidation, userController.blockUser);
+router.patch('/:id/unblock', idParamValidation, userController.unblockUser);
+router.delete('/:id', idParamValidation, userController.deleteUser);
+
+export default router;
