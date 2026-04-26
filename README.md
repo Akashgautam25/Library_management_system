@@ -6,7 +6,7 @@ A **production-ready full-stack Library Management System** built using modern t
 
 ## 🌐 Live Demo
 
-- 🚀 **Frontend:** https://library-management-system-9di7.vercel.app/login
+- 🚀 **Frontend:** https://library-management-system-wm78.vercel.app/login
 - 🔗 **Backend API:** https://library-management-system-1-s08o.onrender.com
 
 ---
