@@ -69,35 +69,47 @@ classDiagram
 ---
 
 ## 2. Use Case Diagram
-Describes the functional requirements and actor interactions.
+Describes the functional requirements and actor interactions (GitHub Compatible).
 
 ```mermaid
-useCaseDiagram
-    actor Student
-    actor Admin
+flowchart LR
+    subgraph Actors
+        S([Student])
+        A([Admin])
+    end
 
-    package "Library Management System" {
-        usecase "Browse & Search Books" as UC1
-        usecase "Borrow Book" as UC2
-        usecase "Return Book" as UC3
-        usecase "View Personal History & Fines" as UC4
-        usecase "Manage Books (CRUD)" as UC5
-        usecase "Manage Users" as UC6
-        usecase "View Admin Dashboard" as UC7
-        usecase "Manage Overdue & Fines" as UC8
-        usecase "View All Transactions" as UC9
-    }
+    subgraph "Library Management System"
+        direction TB
+        UC1(Browse & Search Books)
+        UC2(Borrow Book)
+        UC3(Return Book)
+        UC4(View Personal History & Fines)
+        
+        UC5(Manage Books - CRUD)
+        UC6(Manage Users)
+        UC7(View Admin Dashboard)
+        UC8(Manage Overdue & Fines)
+        UC9(View All Transactions)
+    end
 
-    Student --> UC1
-    Student --> UC2
-    Student --> UC3
-    Student --> UC4
+    %% Student Connections
+    S --> UC1
+    S --> UC2
+    S --> UC3
+    S --> UC4
 
-    Admin --> UC5
-    Admin --> UC6
-    Admin --> UC7
-    Admin --> UC8
-    Admin --> UC9
+    %% Admin Connections
+    A --> UC5
+    A --> UC6
+    A --> UC7
+    A --> UC8
+    A --> UC9
+
+    %% Styling
+    style S fill:#f9f,stroke:#333,stroke-width:2px
+    style A fill:#bbf,stroke:#333,stroke-width:2px
+    style UC1,UC2,UC3,UC4 fill:#fff,stroke:#333,stroke-width:1px
+    style UC5,UC6,UC7,UC8,UC9 fill:#fff,stroke:#333,stroke-width:1px
 ```
 
 ---
