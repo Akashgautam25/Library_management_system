@@ -24,6 +24,7 @@ export interface Book {
     availableQuantity: number;
     publishedYear: number;
     publisher: string;
+    coverUrl?: string;
     createdAt: string;
     updatedAt: string;
 }

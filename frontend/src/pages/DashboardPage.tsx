@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import {
     Library,
     Users,
@@ -70,7 +70,7 @@ const DashboardPage: React.FC = () => {
         fetchStats();
     }, []);
 
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -78,7 +78,7 @@ const DashboardPage: React.FC = () => {
         }
     };
 
-    const itemVariants = {
+    const itemVariants: Variants = {
         hidden: { y: 20, opacity: 0 },
         visible: {
             y: 0,

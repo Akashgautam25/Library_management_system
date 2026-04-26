@@ -1,312 +1,188 @@
-# UML Diagrams - Library Management System
+# 🏛️ Library Management System (SaaS) - Architecture Documentation
+
+This document contains professional UML diagrams representing the architecture and design of the SaaS-based Library Management System.
+
+---
 
 ## 1. Class Diagram
+Represents the system's static structure, including entities and services.
 
 ```mermaid
 classDiagram
-    class IRepository~T~ {
-        <<interface>>
-        +findById(id: string) T
-        +findAll(filter?) T[]
-        +findOne(filter) T
-        +create(data) T
-        +update(id, data) T
-        +delete(id) T
-        +count(filter?) number
+    class User {
+        +String _id
+        +String name
+        +String email
+        +String role
+        +Boolean isBlocked
+        +Date createdAt
     }
 
-    class IReadRepository~T~ {
-        <<interface>>
-        +findById(id: string) T
-        +findAll(filter?) T[]
-        +findOne(filter) T
+    class Book {
+        +String _id
+        +String title
+        +String author
+        +String isbn
+        +Number copies
+        +String category
+        +isAvailable() Boolean
     }
 
-    class IWriteRepository~T~ {
-        <<interface>>
-        +create(data) T
-        +update(id, data) T
-        +delete(id) T
-    }
-
-    class IFineStrategy {
-        <<interface>>
-        +calculateFine(dueDate, returnDate) number
-        +getStrategyName() string
-    }
-
-    class BaseRepository~T~ {
-        <<abstract>>
-        #model: Model~T~
-        +findById(id) T
-        +findAll(filter?) T[]
-        +create(data) T
-        +update(id, data) T
-        +delete(id) T
-        +count(filter?) number
-    }
-
-    class UserRepository {
-        +findByEmail(email) IUser
-        +findAllStudents() IUser[]
-        +findByIdSafe(id) IUser
-    }
-
-    class BookRepository {
-        +search(query) IBook[]
-        +findByCategory(cat) IBook[]
-        +findByIsbn(isbn) IBook
-        +decrementAvailable(id) IBook
-        +incrementAvailable(id) IBook
-    }
-
-    class TransactionRepository {
-        +findByUserId(uid) ITransaction[]
-        +findActiveTransaction(uid, bid) ITransaction
-        +findOverdueTransactions() ITransaction[]
-        +findAllActive() ITransaction[]
-    }
-
-    class StandardFineStrategy {
-        -finePerDay: number
-        +calculateFine(dueDate, returnDate) number
-        +getStrategyName() string
-    }
-
-    class PremiumFineStrategy {
-        -baseFinePerDay: number
-        -escalatedFinePerDay: number
-        -escalationThreshold: number
-        +calculateFine(dueDate, returnDate) number
-        +getStrategyName() string
-    }
-
-    class FineCalculator {
-        -strategy: IFineStrategy
-        +setStrategy(strategy) void
-        +calculate(dueDate, returnDate) number
-        +getActiveStrategy() string
-    }
-
-    class Database {
-        -instance: Database
-        -isConnected: boolean
-        -constructor()
-        +getInstance() Database
-        +connect() void
-        +disconnect() void
+    class Transaction {
+        +String _id
+        +String userId
+        +String bookId
+        +Date borrowDate
+        +Date dueDate
+        +Date returnDate
+        +Number fine
+        +String status
     }
 
     class AuthService {
-        -userRepo: UserRepository
-        +register(data) AuthResponse
-        +login(email, password) AuthResponse
-        +getProfile(userId) IUser
+        +login(credentials)
+        +register(userData)
+        +verifyToken(token)
     }
 
     class BookService {
-        -bookRepo: BookRepository
-        +createBook(data) IBook
-        +getAllBooks() IBook[]
-        +getBookById(id) IBook
-        +updateBook(id, data) IBook
-        +deleteBook(id) IBook
-        +searchBooks(query) IBook[]
+        +addBook(bookData)
+        +updateBook(id, data)
+        +deleteBook(id)
+        +searchBooks(query)
     }
 
     class TransactionService {
-        -transactionRepo: TransactionRepository
-        -bookRepo: BookRepository
-        +issueBook(userId, bookId) ITransaction
-        +returnBook(userId, bookId) ITransaction
-        +getUserHistory(userId) ITransaction[]
+        +issueBook(userId, bookId)
+        +returnBook(transactionId)
+        +calculateFine(dueDate)
+        +getOverdueTransactions()
     }
 
-    class AppError {
-        +statusCode: number
-        +isOperational: boolean
-        +message: string
-    }
-
-    class NotFoundError
-    class ValidationError
-    class UnauthorizedError
-
-    IRepository~T~ --|> IReadRepository~T~
-    IRepository~T~ --|> IWriteRepository~T~
-    BaseRepository~T~ ..|> IRepository~T~
-    UserRepository --|> BaseRepository~T~
-    BookRepository --|> BaseRepository~T~
-    TransactionRepository --|> BaseRepository~T~
-    StandardFineStrategy ..|> IFineStrategy
-    PremiumFineStrategy ..|> IFineStrategy
-    FineCalculator --> IFineStrategy
-    NotFoundError --|> AppError
-    ValidationError --|> AppError
-    UnauthorizedError --|> AppError
-    AuthService --> UserRepository
-    BookService --> BookRepository
-    TransactionService --> TransactionRepository
-    TransactionService --> BookRepository
-    TransactionService --> FineCalculator
+    User "1" -- "*" Transaction : makes
+    Book "1" -- "*" Transaction : involved in
+    TransactionService ..> Transaction : manages
+    BookService ..> Book : manages
+    AuthService ..> User : authenticates
 ```
 
+---
+
 ## 2. Use Case Diagram
+Describes the functional requirements and actor interactions.
 
 ```mermaid
-graph TB
-    subgraph "Library Management System"
-        UC1["🔐 Register"]
-        UC2["🔐 Login"]
-        UC3["📖 Browse Books"]
-        UC4["🔍 Search Books"]
-        UC5["📋 View Book Details"]
-        UC6["📖 Issue Book"]
-        UC7["↩️ Return Book"]
-        UC8["📋 View Borrowing History"]
-        UC9["➕ Add Book"]
-        UC10["✏️ Update Book"]
-        UC11["🗑️ Delete Book"]
-        UC12["📊 View Dashboard"]
-        UC13["👥 Manage Users"]
-        UC14["⚠️ View Overdue Books"]
-        UC15["💰 Calculate Fine"]
-    end
+useCaseDiagram
+    actor Student
+    actor Admin
 
-    Student["👨‍🎓 Student"]
-    Admin["👨‍💼 Admin"]
+    package "Library Management System" {
+        usecase "Browse & Search Books" as UC1
+        usecase "Borrow Book" as UC2
+        usecase "Return Book" as UC3
+        usecase "View Personal History & Fines" as UC4
+        usecase "Manage Books (CRUD)" as UC5
+        usecase "Manage Users" as UC6
+        usecase "View Admin Dashboard" as UC7
+        usecase "Manage Overdue & Fines" as UC8
+        usecase "View All Transactions" as UC9
+    }
 
     Student --> UC1
     Student --> UC2
     Student --> UC3
     Student --> UC4
-    Student --> UC5
-    Student --> UC6
-    Student --> UC7
-    Student --> UC8
 
-    Admin --> UC2
-    Admin --> UC3
-    Admin --> UC4
     Admin --> UC5
+    Admin --> UC6
+    Admin --> UC7
+    Admin --> UC8
     Admin --> UC9
-    Admin --> UC10
-    Admin --> UC11
-    Admin --> UC12
-    Admin --> UC13
-    Admin --> UC14
-
-    UC7 --> UC15
-
-    style Student fill:#06b6d4,stroke:#0891b2,color:#fff
-    style Admin fill:#f59e0b,stroke:#d97706,color:#fff
 ```
 
-## 3. Sequence Diagram - Book Issue Flow
+---
 
+## 3. Sequence Diagram
+Illustrates the logic flow for borrowing and returning books.
+
+### Borrowing Flow
 ```mermaid
 sequenceDiagram
+    autonumber
     actor Student
-    participant Frontend
-    participant AuthMW as Auth Middleware
-    participant Controller as TransactionController
-    participant Service as TransactionService
-    participant BookRepo as BookRepository
-    participant TxnRepo as TransactionRepository
+    participant UI as Frontend (Dashboard)
+    participant API as TransactionService
     participant DB as MongoDB
 
-    Student->>Frontend: Click "Issue Book"
-    Frontend->>AuthMW: POST /api/transactions/issue<br/>{bookId} + JWT Token
-
-    AuthMW->>AuthMW: Verify JWT Token
-    AuthMW->>Controller: req.user = {userId, role}
-
-    Controller->>Service: issueBook(userId, bookId)
-
-    Service->>BookRepo: findById(bookId)
-    BookRepo->>DB: db.books.findById()
-    DB-->>BookRepo: Book document
-    BookRepo-->>Service: Book data
-
-    alt Book not found
-        Service-->>Controller: NotFoundError
-        Controller-->>Frontend: 404 Not Found
-    end
-
-    alt Not available
-        Service-->>Controller: ValidationError
-        Controller-->>Frontend: 400 Bad Request
-    end
-
-    Service->>TxnRepo: findActiveTransaction(userId, bookId)
-    TxnRepo->>DB: db.transactions.findOne()
-    DB-->>TxnRepo: null (no active)
-    TxnRepo-->>Service: null
-
-    alt Already issued
-        Service-->>Controller: ValidationError
-        Controller-->>Frontend: 400 Already Issued
-    end
-
-    Service->>Service: Calculate dueDate (14 days)
-
-    Service->>TxnRepo: create(transaction)
-    TxnRepo->>DB: db.transactions.save()
-    DB-->>TxnRepo: Transaction document
-    TxnRepo-->>Service: Transaction
-
-    Service->>BookRepo: decrementAvailable(bookId)
-    BookRepo->>DB: db.books.findByIdAndUpdate($inc: -1)
-    DB-->>BookRepo: Updated Book
-    BookRepo-->>Service: Updated Book
-
-    Service-->>Controller: Transaction data
-    Controller-->>Frontend: 201 Created {transaction}
-    Frontend-->>Student: "Book issued successfully!"
+    Student->>UI: Clicks "Borrow"
+    UI->>API: POST /api/transactions/borrow
+    API->>DB: Check Book Availability
+    DB-->>API: Available
+    API->>DB: Create Transaction record
+    API->>DB: Update Book Copy Count
+    DB-->>API: Success
+    API-->>UI: 201 Created (Success)
+    UI-->>Student: Show Success Toast
 ```
 
-## 4. ER Diagram
+### Returning Flow (with Fine)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student
+    participant UI as Frontend
+    participant API as TransactionService
+    participant DB as MongoDB
+
+    Student->>UI: Clicks "Return"
+    UI->>API: POST /api/transactions/return/:id
+    API->>DB: Fetch Transaction Details
+    DB-->>API: Transaction found
+    API->>API: calculateFine(dueDate, currentDate)
+    Note over API: If Overdue, set status to 'returned' & store fine
+    API->>DB: Update Transaction (returnDate, fine, status)
+    API->>DB: Increment Book Copy Count
+    DB-->>API: Success
+    API-->>UI: 200 OK (Processed with Fine)
+    UI-->>Student: Display Fine details & Success
+```
+
+---
+
+## 4. Entity-Relationship (ER) Diagram
+Defines the database schema and data relationships.
 
 ```mermaid
 erDiagram
+    USER ||--o{ TRANSACTION : "initiates"
+    BOOK ||--o{ TRANSACTION : "recorded_in"
+
     USER {
-        ObjectId _id PK
-        String name
-        String email UK
-        String password
-        Enum role "admin | student"
-        Date createdAt
-        Date updatedAt
+        string id PK
+        string name
+        string email
+        string password
+        string role "admin | student"
+        boolean isBlocked
     }
 
     BOOK {
-        ObjectId _id PK
-        String title
-        String author
-        String isbn UK
-        String category
-        String description
-        Number quantity
-        Number availableQuantity
-        Number publishedYear
-        String publisher
-        Date createdAt
-        Date updatedAt
+        string id PK
+        string title
+        string author
+        string isbn
+        int totalCopies
+        int availableCopies
     }
 
     TRANSACTION {
-        ObjectId _id PK
-        ObjectId userId FK
-        ObjectId bookId FK
-        Date issueDate
-        Date dueDate
-        Date returnDate
-        Number fine
-        Enum status "issued | returned | overdue"
-        Date createdAt
-        Date updatedAt
+        string id PK
+        string userId FK
+        string bookId FK
+        date borrowDate
+        date dueDate
+        date returnDate
+        float fine
+        string status "borrowed | returned | overdue"
     }
-
-    USER ||--o{ TRANSACTION : "borrows"
-    BOOK ||--o{ TRANSACTION : "is issued in"
 ```
