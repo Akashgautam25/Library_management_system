@@ -184,7 +184,7 @@ npm run dev
 
 ---
 
-## 🎤 Project Summary (For Viva)
+## 🎤 Project Summary
 
 > “This is a full-stack SaaS-based library system with role-based access, transaction tracking, and automated fine management, designed using scalable architecture and deployed on cloud platforms.”
 
