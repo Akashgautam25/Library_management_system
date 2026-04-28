@@ -1,5 +1,7 @@
 # 📚 Library Management System (SaaS) - Project Report
 
+---
+
 ## 1. Project Overview
 The **Library Management System** is a modern, production-grade SaaS platform designed to automate library operations for colleges and institutions. It provides a seamless experience for both administrators and students, featuring secure authentication, real-time book tracking, and automated fine management.
 
@@ -94,10 +96,10 @@ erDiagram
     }
 ```
 
----
-
 ## 7. Deployment Configuration
+
 The system is optimized for a distributed deployment:
+
 - **Backend**: Hosted on Render as a Node.js Web Service.
 - **Frontend**: Hosted on Vercel for high-performance static delivery.
 - **Environment Management**: Fully decoupled configuration via `.env` variables for different environments.
@@ -105,15 +107,19 @@ The system is optimized for a distributed deployment:
 ---
 
 ## 8. Conclusion
-The Library Management System (SaaS) successfully delivers a robust, secure, and user-friendly platform for modern educational institutions. Its scalable architecture and automated features significantly reduce administrative overhead while providing students with a transparent and efficient borrowing experience.
 
-👥 Team
+The **Library Management System (SaaS)** successfully delivers a robust, secure, and user-friendly platform for modern educational institutions. Its scalable architecture and automated features significantly reduce administrative overhead while providing students with a transparent and efficient borrowing experience.
+
+---
+
+## 👥 Team
 
 The project was developed through a collaborative effort, with each member contributing specialized expertise:
 
-Role	Contributor	Responsibilities
-Full Stack Developer	Akash Kumar Gautam	End-to-end development, system integration, architecture implementation
-Frontend Developer	Ansh Sharma	UI/UX design, responsive frontend development
-Backend Developer	Rahul Kumar Diwedi	API development, business logic, authentication
-Database & Architecture	Harender Chhoker	Database schema design, system architecture
-Testing & Documentation	Lakshya	Testing, debugging, and documentation
+| Role | Contributor | Responsibilities |
+|------|------------|------------------|
+| **Full Stack Developer** | Akash Kumar Gautam | End-to-end development, system integration, architecture implementation |
+| **Frontend Developer** | Ansh Sharma | UI/UX design, responsive frontend development |
+| **Backend Developer** | Rahul Kumar Diwedi | API development, business logic, authentication |
+| **Database & Architecture** | Harender Chhoker | Database schema design, system architecture |
+| **Testing & Documentation** | Lakshya | Testing, debugging, and documentation |
