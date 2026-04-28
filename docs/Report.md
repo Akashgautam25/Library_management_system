@@ -106,3 +106,14 @@ The system is optimized for a distributed deployment:
 
 ## 8. Conclusion
 The Library Management System (SaaS) successfully delivers a robust, secure, and user-friendly platform for modern educational institutions. Its scalable architecture and automated features significantly reduce administrative overhead while providing students with a transparent and efficient borrowing experience.
+
+👥 Team
+
+The project was developed through a collaborative effort, with each member contributing specialized expertise:
+
+Role	Contributor	Responsibilities
+Full Stack Developer	Akash Kumar Gautam	End-to-end development, system integration, architecture implementation
+Frontend Developer	Ansh Sharma	UI/UX design, responsive frontend development
+Backend Developer	Rahul Kumar Diwedi	API development, business logic, authentication
+Database & Architecture	Harender Chhoker	Database schema design, system architecture
+Testing & Documentation	Lakshya	Testing, debugging, and documentation
